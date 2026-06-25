@@ -92,7 +92,7 @@ alter table inspection_reports enable row level security;
 
 -- For development (single-user / agent use): allow all authenticated users full access
 -- Replace with stricter policies when adding multi-user auth
-create policy "Allow all for authenticated" on clients for all using (true);
-create policy "Allow all for authenticated" on properties for all using (true);
-create policy "Allow all for authenticated" on property_matches for all using (true);
-create policy "Allow all for authenticated" on inspection_reports for all using (true);
+create policy "Allow all" on clients for all using (true) with check (true);
+create policy "Allow all" on properties for all using (true) with check (true);
+create policy "Allow all" on property_matches for all using (true) with check (true);
+create policy "Allow all" on inspection_reports for all using (true) with check (true);

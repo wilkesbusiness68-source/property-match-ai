@@ -46,14 +46,13 @@ Return ONLY valid JSON with this exact structure:
   })
 
   if (!response.ok) {
-    throw new Error(`OpenRouter API error: ${response.status}`)
+    const errText = await response.text()
+    throw new Error(`OpenRouter API error ${response.status}: ${errText}`)
   }
 
   const data = await response.json()
   const content = data.choices[0].message.content.trim()
-
-  // Strip markdown code fences if present
-  const jsonStr = content.replace(/^```json?\n?/, '').replace(/\n?```$/, '')
+  const jsonStr = content.replace(/^```json?\n?/m, '').replace(/\n?```$/m, '')
   return JSON.parse(jsonStr)
 }
 
@@ -62,8 +61,7 @@ export async function runMatchingForClient(client, properties) {
 
   for (const property of properties) {
     try {
-      // Upsert property into Supabase
-      const { data: savedProperty } = await supabase
+      const { data: savedProperty, error: propError } = await supabase
         .from('properties')
         .upsert(
           {
@@ -89,9 +87,12 @@ export async function runMatchingForClient(client, properties) {
         .select()
         .single()
 
+      if (propError) throw new Error(`Property upsert failed: ${propError.message}`)
+      if (!savedProperty) throw new Error('Property upsert returned no data')
+
       const aiResult = await scorePropertyForClient(property, client)
 
-      const { data: match } = await supabase
+      const { data: match, error: matchError } = await supabase
         .from('property_matches')
         .upsert(
           {
@@ -109,6 +110,8 @@ export async function runMatchingForClient(client, properties) {
         )
         .select()
         .single()
+
+      if (matchError) throw new Error(`Match upsert failed: ${matchError.message}`)
 
       if (aiResult.match_score >= 80 && match) {
         await triggerHighMatchAlert(match.id, aiResult.match_score)

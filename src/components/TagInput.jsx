@@ -20,7 +20,7 @@ export default function TagInput({ label, value = [], onChange, placeholder }) {
           {value.map((tag) => (
             <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-50 text-brand-600 text-xs rounded-lg border border-brand-100 font-medium">
               {tag}
-              <button onClick={() => remove(tag)} className="hover:text-brand-800 transition-colors ml-0.5">
+              <button onClick={() => remove(tag)} className="hover:text-brand-700 transition-colors ml-0.5">
                 <X size={10} />
               </button>
             </span>
